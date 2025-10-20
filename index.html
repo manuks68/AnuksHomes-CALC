@@ -418,15 +418,15 @@
             <h2>📝 DEAL INFORMATION</h2>
             <div class="input-group">
                 <label>Deal Name / Address</label>
-                <input type="text" id="dealName" placeholder="123 Main Street, Houston TX">
+                <input type="text" id="dealName" placeholder="123 Main Street, Houston TX" oninput="capitalizeWords(this)">
             </div>
             <div class="input-group">
                 <label>City, State, Zip Code</label>
-                <input type="text" id="dealAddress" placeholder="Houston, Texas 77002">
+                <input type="text" id="dealAddress" placeholder="Houston, Texas 77002" oninput="capitalizeWords(this)">
             </div>
             <div class="input-group">
                 <label>Notes</label>
-                <input type="text" id="dealNotes" placeholder="Additional notes about this deal">
+                <input type="text" id="dealNotes" placeholder="Additional notes about this deal" oninput="capitalizeWords(this)">
             </div>
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button id="saveDeal" style="flex:1; background:#22c55e; color:#fff; padding:16px 0; border-radius:8px; font-size:16px; font-weight:bold; border:none; cursor:pointer;" onclick="trySaveDeal()">Save Deal</button>
@@ -627,6 +627,14 @@
             <div class="flex items-center justify-end">
                 <button id="exportAll" class="btn-accent px-3 py-2 rounded-lg text-sm" title="Export all saved deals as CSV, JSON, or Text Report">Export Report</button>
 <script>
+// Capitalize first letter of each word in input
+function capitalizeWords(input) {
+    let value = input.value;
+    value = value.replace(/\b\w+/g, function(word) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    });
+    input.value = value;
+}
 // Dropdown menu navigation: scroll to section
 document.addEventListener('DOMContentLoaded', function() {
     var menu = document.getElementById('sectionMenu');
