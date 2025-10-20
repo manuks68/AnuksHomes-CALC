@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Anuks Home Solutions LLC</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Calculator">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <!-- Chart.js for compare chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -418,15 +413,15 @@
             <h2>📝 DEAL INFORMATION</h2>
             <div class="input-group">
                 <label>Deal Name / Address</label>
-                <input type="text" id="dealName" placeholder="123 Main Street, Houston TX" oninput="capitalizeWords(this)">
+                <input type="text" id="dealName" placeholder="123 Main Street, Houston TX">
             </div>
             <div class="input-group">
                 <label>City, State, Zip Code</label>
-                <input type="text" id="dealAddress" placeholder="Houston, Texas 77002" oninput="capitalizeWords(this)">
+                <input type="text" id="dealAddress" placeholder="Houston, Texas 77002">
             </div>
             <div class="input-group">
                 <label>Notes</label>
-                <input type="text" id="dealNotes" placeholder="Additional notes about this deal" oninput="capitalizeWords(this)">
+                <input type="text" id="dealNotes" placeholder="Additional notes about this deal">
             </div>
             <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <button id="saveDeal" style="flex:1; background:#22c55e; color:#fff; padding:16px 0; border-radius:8px; font-size:16px; font-weight:bold; border:none; cursor:pointer;" onclick="trySaveDeal()">Save Deal</button>
@@ -627,14 +622,6 @@
             <div class="flex items-center justify-end">
                 <button id="exportAll" class="btn-accent px-3 py-2 rounded-lg text-sm" title="Export all saved deals as CSV, JSON, or Text Report">Export Report</button>
 <script>
-// Capitalize first letter of each word in input
-function capitalizeWords(input) {
-    let value = input.value;
-    value = value.replace(/\b\w+/g, function(word) {
-        return word.charAt(0).toUpperCase() + word.slice(1);
-    });
-    input.value = value;
-}
 // Dropdown menu navigation: scroll to section
 document.addEventListener('DOMContentLoaded', function() {
     var menu = document.getElementById('sectionMenu');
@@ -645,12 +632,67 @@ document.addEventListener('DOMContentLoaded', function() {
             menu.selectedIndex = 0;
         });
     }
+
+    // Margins input validation for separators
+    var marginsInput = document.getElementById('margins');
+    if (marginsInput) {
+        marginsInput.addEventListener('input', function() {
+            // Only allow comma as separator
+            if (/[.:;|\s]/.test(marginsInput.value)) {
+                showQuickOffersModal('Only commas (,) are allowed as separators for quick offers. Please remove any other characters.');
+            }
+        });
+    }
 });
 // REFRESH button logic: refresh the chart
 window.addEventListener('DOMContentLoaded', function() {
     var refreshBtn = document.getElementById('refreshChart');
     if (refreshBtn) refreshBtn.addEventListener('click', updateCompareChartFromSelection);
 });
+
+// Capitalization for dealName, dealAddress, dealNotes
+window.addEventListener('DOMContentLoaded', function() {
+    function capitalizeWords(str) {
+        return str.replace(/\b\w+/g, function(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        });
+    }
+    var nameInput = document.getElementById('dealName');
+    var addressInput = document.getElementById('dealAddress');
+    var notesInput = document.getElementById('dealNotes');
+    function addImmediateCapitalize(input) {
+        if (!input) return;
+        input.addEventListener('input', function() {
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+            this.value = capitalizeWords(this.value);
+            // Restore cursor position if possible
+            this.setSelectionRange(start, end);
+        });
+    }
+    addImmediateCapitalize(nameInput);
+    addImmediateCapitalize(addressInput);
+    addImmediateCapitalize(notesInput);
+});
+// Show modal for quick offers input validation
+function showQuickOffersModal(msg) {
+    var modal = document.getElementById('quickOffersModal');
+    var msgDiv = document.getElementById('quickOffersModalMsg');
+    var btn = document.getElementById('quickOffersModalBtn');
+    if (modal && msgDiv && btn) {
+        msgDiv.textContent = msg;
+        modal.style.display = 'flex';
+        btn.onclick = function() {
+            modal.style.display = 'none';
+        };
+    }
+}
+function hideQuickOffersModal(event) {
+    var modal = document.getElementById('quickOffersModal');
+    if (modal && event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
 // CLEAR button logic: uncheck all compare-checkboxes and clear chart
 function clearCompare() {
     document.querySelectorAll('.compare-checkbox').forEach(cb => { cb.checked = false; });
@@ -1808,11 +1850,5 @@ function confirmAndLoadDeal(index) {
     );
 }
     </script>
-<script>
-// Register service worker for PWA
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-}
-</script>
 </body>
 </html>
