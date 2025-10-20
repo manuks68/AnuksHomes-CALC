@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Anuks Home Solutions LLC</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Calculator">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- Chart.js for compare chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #compareChart {
+            height: 320px !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+            min-height: 220px !important;
+            border-radius: 8px;
+            background: #ffffff !important;
+            display: block;
+        }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 15px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+        
+        .panel {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #007bff;
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            color: #007bff;
+            font-size: 18px;
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: start; /* Align items to start instead of stretch */
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            min-height: 80px; /* Ensure consistent height for all input groups */
+        }
+        
+        .input-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ccc;
+            font-weight: bold;
+            line-height: 1.3; /* Better line spacing for multi-line labels */
+            min-height: 36px; /* Reserve space for 2-3 lines of text */
+            display: flex;
+            align-items: flex-start; /* Align label text to top */
+        }
+        
+        input, select {
+            width: 100%;
+            height: 50px;
+            padding: 15px;
+            border: 2px solid #555;
+            border-radius: 6px;
+            background: #333;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-top: auto; /* Push input to bottom of flex container */
+        }
+        
+        /* Right justify currency, percentage, and number fields */
+        input[data-type="currency"],
+        input[data-type="percent"], 
+        input[data-type="number"] {
+            text-align: right;
+        }
+        
+        /* Right justify all readonly/calculated fields (default: dim) */
+        input[readonly] {
+            background: #444;
+            color: #888;
+            font-weight: bold;
+            border: 2px solid #007bff;
+            text-align: right;
+            padding-right: 15px;
+            transition: color 0.2s;
+        }
+        /* When updated, calculated fields look like user-entered (white text) */
+        input[readonly].calculated-active {
+            color: #fff !important;
+        }
+        
+        button {
+            width: 100%;
+            height: 50px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #555;
+            margin-top: 15px;
+        }
+        
+        .checkbox-group label {
+            margin: 0;
+            flex: 1;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: 0;
+        }
+        
+        .quick-offers {
+            margin-top: 15px;
+        }
+                .section-menu-compact {
+                    height: 20px !important;
+                    min-width: 60px;
+                    max-width: 80px;
+                    font-size: 10px;
+                    border-radius: 4px;
+                    padding: 0 2px !important;
+                    background: #333;
+                    color: #fff;
+                    border: 2px solid #007bff;
+                }
+
+                /* Make dropdown option list smaller (Webkit browsers) */
+                .section-menu-compact option {
+                    font-size: 10px;
+                    padding: 2px 4px;
+                }
+
+                /* For Firefox */
+                .section-menu-compact:-moz-focusring {
+                    font-size: 10px;
+                }
+        
+        .margin-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .margin-controls input {
+            flex: 1;
+            height: 40px;
+        }
+        
+        .margin-controls button {
+            width: 80px;
+            height: 40px;
+            margin: 0;
+        }
+
+        /* Match placeholder color for all inputs, including margin-input */
+        input::placeholder, input.margin-input::placeholder {
+            color: #888 !important;
+            opacity: 1 !important;
+        }
+
+        /* Dim text for readonly/calculated fields */
+        input[readonly] {
+            background: #444;
+            color: #aaa !important;
+            font-weight: bold;
+            border: 2px solid #007bff;
+            text-align: right;
+            padding-right: 15px;
+        }
+
+        /* Dim text for disabled fields */
+        input:disabled, select:disabled {
+            color: #888 !important;
+            background: #333 !important;
+            opacity: 1 !important;
+        }
+
+        /* Quick calculation boxes */
+        .quick-calc-boxes {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .quick-calc-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .quick-calc-item .label {
+            font-size: 12px;
+            color: #ccc;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .quick-calc-item .value {
+            background: rgba(0, 123, 255, 0.1);
+            border: 2px solid #007bff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff88;
+            text-align: center;
+        }
+        
+        .save-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .save-section input {
+            flex: 1;
+            height: 40px;
+        }
+        
+        .save-section button {
+            width: 80px;
+            height: 40px;
+            margin: 0;
+        }
+        
+        .saved-deals {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .saved-deal {
+            background: #333;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .saved-deal button {
+            width: auto;
+            height: 30px;
+            padding: 5px 10px;
+            margin: 0 2px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .compare-section {
+            background: #333;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            max-height: 160px;
+            overflow-y: auto;
+            min-height: 60px;
+        }
+
+        .compare-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .chart-container {
+            background: #333;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profit-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+        <!-- Dropdown List Menu (top right) -->
+                <div style="position:fixed;top:80px;right:18px;z-index:1000;">
+                    <select id="sectionMenu" style="padding:4px 4px; border-radius:6px; font-size:13px; min-width:110px; max-width:130px;">
+                    <option value="">Go to section…</option>
+                    <option value="#quickOffersSection">Quick Offers</option>
+                    <option value="#dealInfoSection">Deal Info</option>
+                    <option value="#inputsSection">Inputs</option>
+                    <option value="#keyMetricsSection">Key Metrics</option>
+                    <option value="#estimatesSection">Estimates</option>
+                    <option value="#profitabilitySection">Profitability Analysis</option>
+                    <option value="#compareSection">Compare</option>
+                </select>
+            </div>
+        <!-- Custom Modal for Quick Offers Message -->
+                <div id="quickOffersModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;" onclick="hideQuickOffersModal(event)">
+                    <div style="background:#fff;padding:24px 20px 16px 20px;border-radius:12px;max-width:90vw;text-align:center;color:#222;box-shadow:0 2px 16px #000;border:3px solid #007bff;" onclick="event.stopPropagation()">
+                        <div id="quickOffersModalMsg" style="margin-bottom:18px;font-size:1.1em;"></div>
+                        <button id="quickOffersModalBtn" style="background:#007bff;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:1em;cursor:pointer;">OK</button>
+                    </div>
+                </div>
+    <div class="container">
+    <div id="quickOffersSection"></div>
+        <!-- 1. TITLE SECTION -->
+                <div style="display:flex;flex-direction:column;align-items:flex-start;margin-bottom:1.2em;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:2em;">🏠</span>
+                        <span style="font-size:1.6em;font-weight:600;letter-spacing:0.01em;white-space:nowrap;">Anuks Home Solutions LLC</span>
+                    </div>
+                    <div style="font-size:0.97em;color:#2563eb;font-weight:500;white-space:nowrap;">(Profits are made when you BUY, not when you SELL)</div>
+                </div>
+
+        <!-- 2. QUICK OFFERS SECTION -->
+        <div class="panel">
+            <h2>⚡ QUICK OFFERS</h2>
+            <div class="margin-controls">
+                <input type="text" id="margins" value="" placeholder="15,20,25" style="text-align:right;" class="margin-input">
+                <button id="applyButton" type="button">Apply</button>
+            </div>
+            
+            <!-- Quick calculation boxes -->
+            <div class="quick-calc-boxes">
+                <div class="quick-calc-item">
+                  <div class="label" id="quickOffer1Label">Offer @ 15%</div>
+                    <div class="value" id="quickOffer1Value">$0.00</div>
+                </div>
+                <div class="quick-calc-item">
+                    <div class="label" id="quickOffer2Label">Offer @ 20%</div>
+                    <div class="value" id="quickOffer2Value">$0.00</div>
+                </div>
+                <div class="quick-calc-item">
+                    <div class="label" id="quickOffer3Label">Offer @ 25%</div>
+                    <div class="value" id="quickOffer3Value">$0.00</div>
+                </div>
+            </div>
+            
+            <div id="quickOffers" class="quick-offers">
+                <!-- Dynamic content will be generated here -->
+            </div>
+        </div>
+
+        <!-- Debug panel removed -->
+
+        <!-- 3. DEAL INFORMATION SECTION -->
+    <div id="dealInfoSection"></div>
+        <div class="panel">
+            <h2>📝 DEAL INFORMATION</h2>
+            <div class="input-group">
+                <label>Deal Name / Address</label>
+                <input type="text" id="dealName" placeholder="123 Main Street, Houston TX">
+            </div>
+            <div class="input-group">
+                <label>City, State, Zip Code</label>
+                <input type="text" id="dealAddress" placeholder="Houston, Texas 77002">
+            </div>
+            <div class="input-group">
+                <label>Notes</label>
+                <input type="text" id="dealNotes" placeholder="Additional notes about this deal">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="saveDeal" style="flex:1; background:#22c55e; color:#fff; padding:16px 0; border-radius:8px; font-size:16px; font-weight:bold; border:none; cursor:pointer;" onclick="trySaveDeal()">Save Deal</button>
+                <button id="resetInputs" style="flex:1; background:#007bff; color:#fff; padding:16px 0; border-radius:8px; font-size:16px; font-weight:bold; border:none; cursor:pointer;" title="Clear all input fields and reset calculator to default values" onclick="resetInputs()">Reset</button>
+            </div>
+        </div>
+
+        <!-- 4. INPUTS SECTION -->
+    <div id="inputsSection"></div>
+        <div class="panel">
+            <h2>💰 INPUTS</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>After Repair Value</label>
+                    <input type="text" inputmode="decimal" id="arv" data-type="currency" placeholder="$ 350,000" value="">
+                </div>
+                <div class="input-group">
+                    <label>Purchase Price</label>
+                    <input type="text" inputmode="decimal" id="purchasePrice" data-type="currency" placeholder="$ 250,000" value="">
+                </div>
+                <div class="input-group">
+                    <label>Rehab Budget</label>
+                    <input type="text" inputmode="decimal" id="rehabBudget" data-type="currency" placeholder="$ 50,000" value="">
+                </div>
+                <div class="input-group">
+                    <label>Contingency %</label>
+                    <input type="text" inputmode="decimal" id="contingency" data-type="percent" placeholder="10.00 %" value="">
+                </div>
+                <div class="input-group">
+                    <label>Loan to Value %</label>
+                    <input type="text" inputmode="decimal" id="ltv" data-type="percent" placeholder="70.00 %" value="">
+                </div>
+                <div class="input-group">
+                    <label>Closing Costs</label>
+                    <input type="text" inputmode="decimal" id="closingCosts" data-type="currency" placeholder="$ 7,500" value="">
+                </div>
+                <div class="input-group">
+                    <label>Holding Costs</label>
+                    <input type="text" inputmode="decimal" id="holdingCosts" data-type="currency" placeholder="$ 12,000" value="">
+                </div>
+                <div class="input-group">
+                    <label>Sales Costs %</label>
+                    <input type="text" inputmode="decimal" id="salesCosts" data-type="percent" placeholder="6.00 %" value="">
+                </div>
+                <div class="input-group">
+                    <label>Interest Rate %</label>
+                    <input type="text" inputmode="decimal" id="interestRate" data-type="percent" placeholder="12.00 %" value="">
+                </div>
+                <div class="input-group">
+                    <label>Misc. Costs</label>
+                    <input type="text" inputmode="decimal" id="miscCosts" data-type="currency" placeholder="$ 2,000" value="">
+                </div>
+                <div class="input-group">
+                    <label>Points %</label>
+                    <input type="text" inputmode="decimal" id="points" data-type="percent" placeholder="3.00 %" value="">
+                </div>
+                <div class="input-group">
+                    <label>Loan Term (Months)</label>
+                    <input type="number" id="loanTerm" data-type="number" placeholder="12" value="">
+                </div>
+                <div class="input-group full-width">
+                    <label>Desired Profit</label>
+                    <input type="text" inputmode="decimal" id="desiredProfit" data-type="currency" placeholder="$ 30,000" value="">
+                </div>
+                <div class="input-group full-width">
+                    <label>Loan Structure</label>
+                    <select id="loanStructure">
+                        <option value="Interest-Only">Interest-Only</option>
+                        <option value="Amortizing">Amortizing</option>
+                        <option value="Balloon">Balloon</option>
+                    </select>
+                </div>
+            </div>
+            <div class="checkbox-group">
+                <label>Lender covers closing costs?</label>
+                <input type="checkbox" id="lenderCovers">
+            </div>
+        </div>
+
+    <div id="keyMetricsSection"></div>
+    <!-- 5. KEY METRICS SECTION -->
+        <div class="panel">
+            <h2>📊 KEY METRICS</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Maximum Loan per LTV</label>
+                    <input type="text" id="maximumLoan" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Initial Loan Amount</label>
+                    <input type="text" id="initialLoan" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Total Project Cost</label>
+                    <input type="text" id="totalProjectCost" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Ideal Purchase Price</label>
+                    <input type="text" id="idealPurchase" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Rehab Not Funded</label>
+                    <input type="text" id="rehabNotFunded" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Rehab Draw (Funded)</label>
+                    <input type="text" id="rehabDraw" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Total Loan Amount</label>
+                    <input type="text" id="totalLoanAmount" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Maximum Allowable Offer</label>
+                    <input type="text" id="mao" readonly value="$0.00">
+                </div>
+            </div>
+        </div>
+
+    <div id="estimatesSection"></div>
+    <!-- 6. ESTIMATES SECTION -->
+        <div class="panel">
+            <h2>� ESTIMATES</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Est. Rehab Not Funded</label>
+                    <input type="text" id="cashToFundRehab" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Est. Borrower Cash at Closing</label>
+                    <input type="text" id="borrowerCash" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Est. Monthly Payment</label>
+                    <input type="text" id="monthlyPayment" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Est. Liquidity Required</label>
+                    <input type="text" id="liquidity" readonly value="$0.00">
+                </div>
+            </div>
+        </div>
+
+    <div id="profitabilitySection"></div>
+    <!-- 7. PROFITABILITY ANALYSIS SECTION -->
+        <div class="panel">
+            <h2>💰 PROFITABILITY ANALYSIS</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label>Net Resale Cost</label>
+                    <input type="text" id="netResale" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Net from Sale</label>
+                    <input type="text" id="netFromSale" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Total Loan Repayment</label>
+                    <input type="text" id="totalLoanRepayment" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Net Proceeds</label>
+                    <input type="text" id="netProceeds" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Out of Pocket Costs</label>
+                    <input type="text" id="outOfPocket" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Net Profit</label>
+                    <input type="text" id="netProfit" readonly value="$0.00">
+                </div>
+                <div class="input-group">
+                    <label>Return on Investment %</label>
+                    <input type="text" id="roi" readonly value="0.00%">
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. PURCHASE PRICE TO MAKE DESIRED PROFIT SECTION -->
+        <div class="panel">
+            <h2>🎯 PURCHASE PRICE TO MAKE DESIRED PROFIT</h2>
+            <div class="input-group">
+                <label>Calculated Purchase Price</label>
+                <div id="purchaseForDesired" class="profit-value">$0.00</div>
+            </div>
+        </div>
+
+        <!-- 9. SAVED DEALS SECTION -->
+        <div class="panel">
+            <h2>💾 SAVED DEALS</h2>
+            <!-- Save Deal button moved to Deal Information section -->
+            <div id="savedDeals" class="saved-deals">
+                <div style="color: #999; text-align: center; padding: 20px;">
+                    No saved deals yet
+                </div>
+            </div>
+            <div class="flex items-center justify-end">
+                <button id="exportAll" class="btn-accent px-3 py-2 rounded-lg text-sm" title="Export all saved deals as CSV, JSON, or Text Report">Export Report</button>
+<script>
+// Dropdown menu navigation: scroll to section
+document.addEventListener('DOMContentLoaded', function() {
+    var menu = document.getElementById('sectionMenu');
+    if (menu) {
+        menu.addEventListener('change', function() {
+            var target = document.querySelector(menu.value);
+            if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+            menu.selectedIndex = 0;
+        });
+    }
+});
+// REFRESH button logic: refresh the chart
+window.addEventListener('DOMContentLoaded', function() {
+    var refreshBtn = document.getElementById('refreshChart');
+    if (refreshBtn) refreshBtn.addEventListener('click', updateCompareChartFromSelection);
+});
+// CLEAR button logic: uncheck all compare-checkboxes and clear chart
+function clearCompare() {
+    document.querySelectorAll('.compare-checkbox').forEach(cb => { cb.checked = false; });
+    updateCompareChartFromSelection();
+}
+
+// Wire up CLEAR button after DOM loads
+window.addEventListener('DOMContentLoaded', function() {
+    var clearBtn = document.getElementById('clearCompare');
+    if (clearBtn) clearBtn.addEventListener('click', clearCompare);
+});
+
+// --- GENERATE OFFERS FUNCTION ---
+function generateOffers() {
+    // Only use actual input values, never placeholder
+    let arvInput = document.getElementById('arv');
+    let arv = 0;
+    if (arvInput && arvInput.value.trim() !== '') {
+        arv = parseFloat(arvInput.value.replace(/[^\d.]/g, '')) || 0;
+    }
+    if (!arv) {
+        showArvRequiredModal();
+        return;
+    }
+    let marginsInput = document.getElementById('margins');
+    let marginStr = (marginsInput && marginsInput.value.trim() !== '') ? marginsInput.value : '';
+    // Only proceed if marginStr is non-empty and contains at least one valid number
+    let margins = [];
+    if (marginStr !== '') {
+        margins = marginStr.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+    }
+    if (margins.length === 0) {
+        // If no valid margins, show placeholder visually but do not calculate
+        ['quickOffer1Label','quickOffer2Label','quickOffer3Label'].forEach((id, i) => {
+            let label = document.getElementById(id);
+            if (label) label.textContent = `Offer @ ${(marginsInput && marginsInput.placeholder && marginsInput.placeholder.split(',')[i]) ? marginsInput.placeholder.split(',')[i].trim() : 0}%`;
+        });
+        ['quickOffer1Value','quickOffer2Value','quickOffer3Value'].forEach(id => {
+            let value = document.getElementById(id);
+            if (value) value.textContent = '$0.00';
+        });
+        return;
+    }
+    while (margins.length < 3) margins.push(0);
+    for (let i = 0; i < 3; i++) {
+        let label = document.getElementById('quickOffer' + (i+1) + 'Label');
+        let value = document.getElementById('quickOffer' + (i+1) + 'Value');
+        let margin = margins[i] || 0;
+        if (label) label.textContent = `Offer @ ${margin}%`;
+        let offer = arv > 0 && margin > 0 ? arv * (1 - margin/100) : 0;
+        if (value) value.textContent = '$' + offer.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        if (value && (isNaN(offer) || offer <= 0)) value.textContent = '$0.00';
+    }
+}
+// Enhanced Export Report button with format choice, no layout changes
+document.addEventListener('DOMContentLoaded', function() {
+    var exportBtn = document.getElementById('exportAll');
+    function attachExportHandler(btn) {
+        if (!btn) return;
+        if (btn._exportHandlerAttached) return;
+        btn._exportHandlerAttached = true;
+        btn.onclick = function() {
+            var arr = (typeof savedDeals !== 'undefined') ? savedDeals : [];
+            if (!arr.length) {
+                if (typeof showSaveDealModal === 'function') {
+                    showSaveDealModal('No saved deals to export.', [{text:'OK', bg:'#007bff', color:'#fff'}]);
+                } else {
+                    alert('No saved deals to export.');
+                }
+                return;
+            }
+            // Remove any existing export modal before creating a new one
+            var oldModal = document.getElementById('exportFormatModal');
+            if (oldModal) oldModal.remove();
+            // Show export format options
+            var modal = document.createElement('div');
+            modal.id = 'exportFormatModal';
+            modal.style.position = 'fixed';
+            modal.style.inset = '0';
+            modal.style.background = 'rgba(0,0,0,0.45)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.zIndex = 9999;
+            var box = document.createElement('div');
+            box.style.background = '#fff';
+            box.style.color = '#111';
+            box.style.padding = '18px';
+            box.style.borderRadius = '8px';
+            box.style.maxWidth = '340px';
+            box.style.width = '92%';
+            box.style.boxShadow = '0 8px 30px rgba(0,0,0,0.25)';
+            var html = '';
+            html += '<div style="margin-bottom:12px;font-weight:600">Export Saved Deals</div>';
+            html += '<div style="margin-bottom:16px;white-space:normal">Choose a format to export your saved deals:</div>';
+            html += '<div style="display:flex;gap:8px;justify-content:flex-end">';
+            html += '<button id="export-xlsx" style="padding:8px 12px;border-radius:6px;border:1px solid #cfcfcf;background:#fff;color:#111">Excel (.xlsx)</button>';
+            html += '<button id="export-json" style="padding:8px 12px;border-radius:6px;border:1px solid #cfcfcf;background:#fff;color:#111">JSON</button>';
+            html += '<button id="export-txt" style="padding:8px 12px;border-radius:6px;border:1px solid #cfcfcf;background:#fff;color:#111">Text</button>';
+            html += '<button id="export-cancel" style="padding:8px 12px;border-radius:6px;border:none;background:#2563eb;color:#fff;font-weight:600">Cancel</button>';
+            html += '</div>';
+            box.innerHTML = html;
+            modal.appendChild(box);
+            document.body.appendChild(modal);
+            // Robust cleanup: remove modal and all event listeners
+            function cleanup() {
+                var m = document.getElementById('exportFormatModal');
+                if (m) m.remove();
+            }
+            // Allow clicking outside the box to close
+            modal.onclick = function(e) { if (e.target === modal) cleanup(); };
+            document.getElementById('export-cancel').onclick = cleanup;
+            // CSV export removed as requested
+            document.getElementById('export-json').onclick = function() {
+                // JSON export
+                var blob = new Blob([JSON.stringify(arr, null, 2)], {type: 'application/json'});
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'hf_report_' + (new Date()).toISOString().slice(0,10) + '.json';
+                a.click();
+                URL.revokeObjectURL(a.href);
+                cleanup();
+            };
+            document.getElementById('export-txt').onclick = function() {
+                // Text export (all fields, no duplicate Deal Name)
+                if (!arr.length) return cleanup();
+                var exportKeys = [
+                    'dealNotes','arv','purchasePrice','rehabBudget','contingency','ltv','closingCosts','holdingCosts','salesCosts','interestRate','miscCosts','points','loanTerm','desiredProfit','lenderCovers','margins',
+                    'quickOffer1Label','quickOffer1Value','quickOffer2Label','quickOffer2Value','quickOffer3Label','quickOffer3Value',
+                    // Key Metrics
+                    'maximumLoan','initialLoan','totalProjectCost','idealPurchase','rehabNotFunded','rehabDraw','totalLoanAmount','mao',
+                    // Estimates
+                    'cashToFundRehab','borrowerCash','monthlyPayment','liquidity',
+                    // Profitability Analysis
+                    'netResale','netFromSale','totalLoanRepayment','netProceeds','outOfPocket','netProfit','roi',
+                    // Purchase Price to Make Desired Profit
+                    'purchaseForDesired'
+                ];
+                var txt = 'REPORT ' + (new Date()).toLocaleString() + '\n\n';
+                arr.forEach(function(d,i){
+                    let fullAddress = '';
+                    if (d && typeof d.fullAddress === 'string' && d.fullAddress.trim() && d.fullAddress !== 'undefined' && d.fullAddress !== 'null') {
+                        fullAddress = d.fullAddress.trim();
+                    } else if (d && d.data && typeof d.data.fullAddress === 'string' && d.data.fullAddress.trim() && d.data.fullAddress !== 'undefined' && d.data.fullAddress !== 'null') {
+                        fullAddress = d.data.fullAddress.trim();
+                    }
+                    txt += 'DEAL ' + (i+1) + ': ' + fullAddress + '\nDate: ' + (d.date||'') + '\n';
+                    exportKeys.forEach(function(k){ txt += k+': ' + (d.data && d.data[k] ? d.data[k] : '') + '\n'; });
+                    txt += '\n';
+                });
+                var blob = new Blob([txt], {type: 'text/plain'});
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'hf_report_' + (new Date()).toISOString().slice(0,10) + '.txt';
+                a.click();
+                URL.revokeObjectURL(a.href);
+                cleanup();
+            };
+
+            // Excel (.xlsx) export using SheetJS
+            document.getElementById('export-xlsx').onclick = function() {
+                // Load SheetJS if not already loaded
+                function doExportXLSX() {
+                    var exportKeys = [
+                        'dealNotes','arv','purchasePrice','rehabBudget','contingency','ltv','closingCosts','holdingCosts','salesCosts','interestRate','miscCosts','points','loanTerm','desiredProfit','lenderCovers','margins',
+                        'quickOffer1Label','quickOffer1Value','quickOffer2Label','quickOffer2Value','quickOffer3Label','quickOffer3Value',
+                        'maximumLoan','initialLoan','totalProjectCost','idealPurchase','rehabNotFunded','rehabDraw','totalLoanAmount','mao',
+                        'cashToFundRehab','borrowerCash','monthlyPayment','liquidity',
+                        'netResale','netFromSale','totalLoanRepayment','netProceeds','outOfPocket','netProfit','roi',
+                        'purchaseForDesired'
+                    ];
+                    var ws_data = [];
+                    // Header row
+                    ws_data.push(['Full Address','Date'].concat(exportKeys));
+                    arr.forEach(function(d) {
+                        let fullAddress = '';
+                        if (d && typeof d.fullAddress === 'string' && d.fullAddress.trim() && d.fullAddress !== 'undefined' && d.fullAddress !== 'null') {
+                            fullAddress = d.fullAddress.trim();
+                        } else if (d && d.data && typeof d.data.fullAddress === 'string' && d.data.fullAddress.trim() && d.data.fullAddress !== 'undefined' && d.data.fullAddress !== 'null') {
+                            fullAddress = d.data.fullAddress.trim();
+                        }
+                        var row = [fullAddress, d.date||''];
+                        exportKeys.forEach(function(k){ row.push((d.data && d.data[k]) ? (''+d.data[k]) : ''); });
+                        ws_data.push(row);
+                    });
+                    var ws = XLSX.utils.aoa_to_sheet(ws_data);
+                    var wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Deals');
+                    var wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+                    var blob = new Blob([wbout], {type: 'application/octet-stream'});
+                    var a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'hf_report_' + (new Date()).toISOString().slice(0,10) + '.xlsx';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                    cleanup();
+                }
+                if (typeof XLSX === 'undefined') {
+                    var script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+                    script.onload = doExportXLSX;
+                    document.body.appendChild(script);
+                } else {
+                    doExportXLSX();
+                }
+            };
+        };
+    }
+    // Fallback: try again after a short delay in case button is rendered late
+    setTimeout(function() {
+        attachExportHandler(document.getElementById('exportAll'));
+    }, 1000);
+    attachExportHandler(exportBtn);
+});
+</script>
+            </div>
+        <!-- Modal for Save Deal validation and confirmation -->
+        <div id="saveDealModal" style="display:none;position:fixed;z-index:9999;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+            <div id="saveDealModalBox" style="background:#fff;padding:24px 20px 16px 20px;border-radius:12px;max-width:90vw;text-align:center;color:#222;box-shadow:0 2px 16px #000;border:3px solid #007bff;">
+                <div id="saveDealModalMsg" style="margin-bottom:18px;font-size:1.1em;"></div>
+                <div id="saveDealModalBtns" style="display:flex;gap:16px;justify-content:center;"></div>
+            </div>
+        </div>
+        </div>
+
+        <!-- 10. COMPARE CHART & LIST SECTION -->
+    <div id="compareSection"></div>
+        <div class="panel">
+            <h2>📊 COMPARE CHART & LIST</h2>
+            <div id="compareList" class="compare-section">
+                <!-- Compare deals will be rendered here by renderCompareList() -->
+            </div>
+            <div class="save-section">
+                <button id="refreshChart">Refresh Chart</button>
+                <button id="clearCompare">Clear</button>
+            </div>
+            <canvas id="compareChart" width="300" height="200" style="background:#fff;"></canvas>
+        </div>
+    </div>
+
+    <script>
+
+        // Show overwrite modal for duplicate saved deals
+        function showOverwriteModal(message, onAccept, onCancel, title = 'Duplicate saved deal', acceptLabel = 'Overwrite', cancelLabel = 'Cancel') {
+            var modal = document.getElementById('saveDealModal');
+            var msgBox = document.getElementById('saveDealModalMsg');
+            var btnsBox = document.getElementById('saveDealModalBtns');
+            if (modal && msgBox && btnsBox) {
+                msgBox.innerHTML = `<div style='font-weight:bold;font-size:1.1em;margin-bottom:8px;'>${title}</div>${message}`;
+                btnsBox.innerHTML = '';
+                [
+                    {text:cancelLabel, bg:'#007bff', color:'#fff', action:onCancel},
+                    {text:acceptLabel, bg:'#22c55e', color:'#fff', action:onAccept}
+                ].forEach(function(btn) {
+                    var b = document.createElement('button');
+                    b.textContent = btn.text;
+                    b.style = 'background:' + btn.bg + ';color:' + btn.color + ';border:none;padding:10px 24px;border-radius:6px;font-size:1em;cursor:pointer;min-width:80px;';
+                    b.onclick = function() { modal.style.display = 'none'; btn.action && btn.action(); };
+                    btnsBox.appendChild(b);
+                });
+                modal.style.display = 'flex';
+            }
+        }
+
+        // Enhanced saveDeal with duplicate detection
+        function saveDeal() {
+            const dealName = document.getElementById('dealName').value.trim();
+            const dealAddress = document.getElementById('dealAddress').value.trim();
+            if (!dealName || !dealAddress) {
+                showSaveDealModal('Address, City, State, etc. required. Notes (Optional)', [{text:'OK', bg:'#007bff', color:'#fff'}]);
+                return;
+            }
+            // Check for duplicate (same FullAddress and address)
+            const duplicateIdx = savedDeals.findIndex(d => (d.FullAddress === dealName || (d.data && (d.data.dealName === dealName || d.data.dealAddress === dealAddress))) && d.data && d.data.dealAddress === dealAddress);
+            if (duplicateIdx !== -1) {
+                // Overwrite existing
+                savedDeals[duplicateIdx] = buildDealObj();
+            } else {
+                // Add new
+                savedDeals.unshift(buildDealObj());
+            }
+            localStorage.setItem('mobileCalculatorDeals', JSON.stringify(savedDeals));
+            renderSavedDeals();
+            renderCompareList();
+            setupMobileFormatting();
+        }
+
+        // Helper to build deal object
+        function buildDealObj() {
+            function getVal(id, isText) {
+                var el = document.getElementById(id);
+                if (!el) return '';
+                if (el.type === 'checkbox') return el.checked;
+                if (isText) return el.textContent;
+                return el.value !== undefined ? el.value : '';
+            }
+            const dealNameVal = getVal('dealName');
+            const dealAddressVal = getVal('dealAddress');
+            // Concatenate Deal Name and Address for all uses
+            const fullAddress = (dealNameVal && dealAddressVal) ? (dealNameVal + ', ' + dealAddressVal) : (dealNameVal || dealAddressVal);
+            return {
+                fullAddress: fullAddress,
+                date: new Date().toLocaleDateString(),
+                data: {
+                    fullAddress: fullAddress,
+                    // Deal Information fields
+                    dealName: dealNameVal,
+                    dealAddress: dealAddressVal,
+                    dealNotes: getVal('dealNotes'),
+                    // Inputs section
+                    arv: getVal('arv'),
+                    purchasePrice: getVal('purchasePrice'),
+                    rehabBudget: getVal('rehabBudget'),
+                    contingency: getVal('contingency'),
+                    ltv: getVal('ltv'),
+                    closingCosts: getVal('closingCosts'),
+                    holdingCosts: getVal('holdingCosts'),
+                    salesCosts: getVal('salesCosts'),
+                    interestRate: getVal('interestRate'),
+                    miscCosts: getVal('miscCosts'),
+                    points: getVal('points'),
+                    loanTerm: getVal('loanTerm'),
+                    desiredProfit: getVal('desiredProfit'),
+                    lenderCovers: getVal('lenderCovers'),
+                    // Quick Offers
+                    margins: getVal('margins'),
+                    quickOffer1Label: getVal('quickOffer1Label', true),
+                    quickOffer2Label: getVal('quickOffer2Label', true),
+                    quickOffer3Label: getVal('quickOffer3Label', true),
+                    quickOffer1Value: getVal('quickOffer1Value', true),
+                    quickOffer2Value: getVal('quickOffer2Value', true),
+                    quickOffer3Value: getVal('quickOffer3Value', true),
+                    // Key Metrics
+                    maximumLoan: getVal('maximumLoan'),
+                    initialLoan: getVal('initialLoan'),
+                    totalProjectCost: getVal('totalProjectCost'),
+                    idealPurchase: getVal('idealPurchase'),
+                    rehabNotFunded: getVal('rehabNotFunded'),
+                    rehabDraw: getVal('rehabDraw'),
+                    totalLoanAmount: getVal('totalLoanAmount'),
+                    mao: getVal('mao'),
+                    // Estimates
+                    cashToFundRehab: getVal('cashToFundRehab'),
+                    borrowerCash: getVal('borrowerCash'),
+                    monthlyPayment: getVal('monthlyPayment'),
+                    liquidity: getVal('liquidity'),
+                    // Profitability Analysis
+                    netResale: getVal('netResale'),
+                    netFromSale: getVal('netFromSale'),
+                    totalLoanRepayment: getVal('totalLoanRepayment'),
+                    netProceeds: getVal('netProceeds'),
+                    outOfPocket: getVal('outOfPocket'),
+                    netProfit: getVal('netProfit'),
+                    roi: getVal('roi'),
+                    // Purchase Price to Make Desired Profit
+                    purchaseForDesired: getVal('purchaseForDesired', true)
+                }
+            };
+        }
+
+        // Update renderSavedDeals to show address and notes
+        function renderSavedDeals() {
+            const container = document.getElementById('savedDeals');
+            if (savedDeals.length === 0) {
+                container.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">No saved deals yet</div>';
+                return;
+            }
+            let html = '';
+            savedDeals.forEach((deal, index) => {
+                let fullAddress = '';
+                if (deal && typeof deal.fullAddress === 'string' && deal.fullAddress.trim() && deal.fullAddress !== 'undefined' && deal.fullAddress !== 'null') {
+                    fullAddress = deal.fullAddress.trim();
+                } else if (deal && deal.data && typeof deal.data.fullAddress === 'string' && deal.data.fullAddress.trim() && deal.data.fullAddress !== 'undefined' && deal.data.fullAddress !== 'null') {
+                    fullAddress = deal.data.fullAddress.trim();
+                }
+                html += `
+                    <div class="saved-deal" style="display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div>
+                            <strong>${fullAddress}</strong><br>
+                            <small style="color: #999;">${deal.date}</small>
+                            ${deal.data && deal.data.dealNotes ? `<div style='color:#ccc;font-size:12px;margin-top:4px;'>Notes: ${deal.data.dealNotes}</div>` : ''}
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:100px;">
+                            <button class="viewDeal btn-accent px-3 py-1 rounded-lg" style="min-width:86px;background:#2563eb;color:#fff;text-align:center;" onclick="confirmAndLoadDeal(${index})">Load</button>
+                            <button class="deleteDeal px-3 py-1 rounded-lg" style="min-width:86px;background:#dc2626;color:#fff;text-align:center;" onclick="deleteDeal(${index})">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            // Add event listeners to checkboxes to update chart
+            const checkboxes = container.querySelectorAll('.compare-checkbox');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateCompareChartFromSelection);
+            });
+            // Initial chart render
+            updateCompareChartFromSelection();
+        }
+
+        // Show Save Deal modal
+        function showSaveDealModal(msg, buttons) {
+            var modal = document.getElementById('saveDealModal');
+            var msgBox = document.getElementById('saveDealModalMsg');
+            var btnsBox = document.getElementById('saveDealModalBtns');
+            if (modal && msgBox && btnsBox) {
+                msgBox.textContent = msg;
+                btnsBox.innerHTML = '';
+                buttons.forEach(function(btn) {
+                    var b = document.createElement('button');
+                    b.textContent = btn.text;
+                    b.style = 'background:' + (btn.bg || '#007bff') + ';color:' + (btn.color || '#fff') + ';border:none;padding:10px 24px;border-radius:6px;font-size:1em;cursor:pointer;min-width:80px;';
+                    b.onclick = function() { modal.style.display = 'none'; btn.action && btn.action(); };
+                    btnsBox.appendChild(b);
+                });
+                modal.style.display = 'flex';
+            }
+        }
+
+        // Try to save deal, validate required fields
+        function trySaveDeal() {
+            var name = document.getElementById('dealName').value.trim();
+            var address = document.getElementById('dealAddress').value.trim();
+            if (!name || !address) {
+                showSaveDealModal('Address, City, State, etc. required. Notes (Optional)', [{text:'OK', bg:'#007bff', color:'#fff'}]);
+                return;
+            }
+            // Normalize for duplicate detection (case/space-insensitive)
+            var normName = name.replace(/\s+/g, '').toLowerCase();
+            var normAddr = address.replace(/\s+/g, '').toLowerCase();
+            var duplicateIdx = savedDeals.findIndex(d =>
+                d && (d.FullAddress || (d.data && (d.data.dealName || d.data.dealAddress))) && d.data &&
+                ((d.FullAddress || (d.data.dealName || d.data.dealAddress)).replace(/\s+/g, '').toLowerCase() === normName ||
+                 (d.DealName || (d.data.dealName || d.data.dealAddress)).replace(/\s+/g, '').toLowerCase() === normAddr) &&
+                d.data.dealAddress && d.data.dealAddress.replace(/\s+/g, '').toLowerCase() === normAddr
+            );
+            if (duplicateIdx !== -1) {
+                showOverwriteModal(
+                    'A saved deal with this name and address already exists. Overwrite?',
+                    function() { saveDeal(duplicateIdx); syncSavedDealsFromStorage(); renderCompareList(); },
+                    function() { /* do nothing */ },
+                    'Duplicate Saved Deal',
+                    'Overwrite',
+                    'Cancel'
+                );
+            } else {
+                showSaveDealModal('Do you want to save this deal information?', [
+                    {text:'No', bg:'#dc2626', color:'#fff'},
+                    {text:'Yes', bg:'#22c55e', color:'#fff', action:function(){saveDeal(); syncSavedDealsFromStorage(); renderCompareList();}}
+                ]);
+            }
+        }
+
+        // --- MOBILE-FRIENDLY FORMATTING FOR ALL FIELDS ---
+
+// --- NEW EVENT SYSTEM: attachCalcListeners & restoreFormattingListeners ---
+function attachCalcListeners() {
+    document.getElementById('applyButton')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        generateOffers();
+        return false;
+    });
+    document.getElementById('margins')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            generateOffers();
+        }
+    });
+    // Dynamically update calculated fields on input/change
+    const calcInputIds = [
+        'arv','purchasePrice','rehabBudget','contingency','ltv','closingCosts','holdingCosts','salesCosts','interestRate','miscCosts','points','loanTerm','desiredProfit','margins','lenderCovers','loanStructure'
+    ];
+    calcInputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', calculate);
+            el.addEventListener('change', calculate);
+        }
+    });
+}
+
+function restoreFormattingListeners() {
+    // Currency fields
+    const currencyFields = ['arv', 'purchasePrice', 'rehabBudget', 'closingCosts', 'holdingCosts', 'miscCosts', 'desiredProfit'];
+    currencyFields.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.style.textAlign = 'right';
+        input.addEventListener('focus', function() {
+            this.value = this.value.replace(/[^\d.]/g, '');
+        });
+        input.addEventListener('blur', function() {
+            setTimeout(() => {
+                let num = parseFloat(this.value.replace(/[^\d.]/g, '')) || 0;
+                this.value = num > 0 ? ('$ ' + num.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})) : '';
+            }, 50);
+        });
+    });
+    // Percent fields
+    const percentFields = ['contingency', 'ltv', 'salesCosts', 'interestRate', 'points'];
+    percentFields.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.style.textAlign = 'right';
+        input.addEventListener('focus', function() {
+            this.value = this.value.replace(/[^\d.]/g, '');
+        });
+        input.addEventListener('blur', function() {
+            setTimeout(() => {
+                let num = parseFloat(this.value.replace(/[^\d.]/g, '')) || 0;
+                this.value = num.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' %';
+            }, 50);
+        });
+    });
+    // Number field
+    const loanTerm = document.getElementById('loanTerm');
+    if (loanTerm) {
+        loanTerm.inputMode = 'numeric';
+        loanTerm.type = 'number';
+        loanTerm.style.textAlign = 'right';
+    }
+}
+
+// Ensure savedDeals is initialized globally at the very top
+var savedDeals = JSON.parse(localStorage.getItem('mobileCalculatorDeals') || '[]');
+
+// Always reload savedDeals from localStorage before rendering Compare Chart & List
+function syncSavedDealsFromStorage() {
+    try {
+        savedDeals = JSON.parse(localStorage.getItem('mobileCalculatorDeals') || '[]');
+    } catch (e) { savedDeals = []; }
+}
+
+// Main initialization block for startup
+document.addEventListener('DOMContentLoaded', function() {
+    attachCalcListeners();
+    restoreFormattingListeners();
+    syncSavedDealsFromStorage();
+    renderSavedDeals();
+    renderCompareList();
+    calculate();
+    ['quickOffer1Value','quickOffer2Value','quickOffer3Value'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '$0.00';
+    });
+    // Patch generateOffers to always set quick offer values to '$0.00' if calculation fails or is empty
+    if (typeof window.generateOffers === 'function' && !window._patchedGenerateOffers) {
+        const origGenerateOffers = window.generateOffers;
+        window.generateOffers = function() {
+            origGenerateOffers();
+            ['quickOffer1Value','quickOffer2Value','quickOffer3Value'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && (!el.textContent || el.textContent.trim() === '' || el.textContent === '$0')) {
+                    el.textContent = '$0.00';
+                }
+            });
+        };
+        window._patchedGenerateOffers = true;
+    }
+});
+// --- RENDER COMPARE LIST ---
+function renderCompareList() {
+    const container = document.getElementById('compareList');
+    if (!container) return;
+    if (!Array.isArray(savedDeals) || savedDeals.length === 0) {
+        container.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Save deals to compare them here</div>';
+        return;
+    }
+    let html = '';
+    savedDeals.forEach((deal, index) => {
+        let fullAddress = '';
+        if (deal && typeof deal.fullAddress === 'string' && deal.fullAddress.trim() && deal.fullAddress !== 'undefined' && deal.fullAddress !== 'null') {
+            fullAddress = deal.fullAddress.trim();
+        } else if (deal && deal.data && typeof deal.data.fullAddress === 'string' && deal.data.fullAddress.trim() && deal.data.fullAddress !== 'undefined' && deal.data.fullAddress !== 'null') {
+            fullAddress = deal.data.fullAddress.trim();
+        }
+        html += `
+            <div class="compare-deal" style="background:#333;padding:10px;margin-bottom:10px;border-radius:6px;border:1px solid #555;display:flex;justify-content:space-between;align-items:flex-start;">
+                <div>
+                    <strong>${fullAddress}</strong><br>
+                    <small style=\"color: #999;\">${deal.date || ''}</small>
+                    ${deal.data && deal.data.dealNotes ? `<div style='color:#ccc;font-size:12px;margin-top:4px;'>Notes: ${deal.data.dealNotes}</div>` : ''}
+                </div>
+                <div style="display:flex;align-items:center;min-width:40px;justify-content:flex-end;">
+                    <input type='checkbox' class='compare-checkbox' data-index='${index}' style='width:20px;height:20px;'>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+    // Add event listeners to checkboxes to update chart
+    const checkboxes = container.querySelectorAll('.compare-checkbox');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateCompareChartFromSelection);
+    });
+    // Initial chart render
+    updateCompareChartFromSelection();
+    // Restore formatting listeners after DOM update
+    restoreFormattingListeners();
+}
+
+function updateCompareChartFromSelection() {
+    const checkboxes = document.querySelectorAll('.compare-checkbox');
+    const selected = [];
+    checkboxes.forEach(cb => {
+        if (cb.checked) {
+            const idx = parseInt(cb.getAttribute('data-index'), 10);
+            if (!isNaN(idx) && savedDeals[idx]) selected.push(savedDeals[idx]);
+        }
+    });
+    renderCompareChart(selected);
+}
+
+function renderCompareChart(selectedDeals) {
+    // Use Chart.js for rendering, matching desktop style
+    if (window.compareChartJS && window.compareChartJS.destroy) window.compareChartJS.destroy();
+    const canvas = document.getElementById('compareChart');
+    if (!canvas) return;
+    if (!selectedDeals || selectedDeals.length === 0) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#888';
+        ctx.font = '16px Arial';
+        const text = 'Select deals to compare';
+        const textMetrics = ctx.measureText(text);
+        const x = (canvas.width - textMetrics.width) / 2;
+        // For vertical centering, use actualBoundingBoxAscent/Descent if available, else fallback
+        let y;
+        if (textMetrics.actualBoundingBoxAscent && textMetrics.actualBoundingBoxDescent) {
+            y = (canvas.height + textMetrics.actualBoundingBoxAscent - textMetrics.actualBoundingBoxDescent) / 2;
+        } else {
+            y = canvas.height / 2 + 8; // 8 is approx half font size
+        }
+        ctx.fillText(text, x, y);
+        return;
+    }
+    // Prepare data for Chart.js
+    const labels = selectedDeals.map((deal, i) => (deal.data && deal.data.fullAddress) ? String(deal.data.fullAddress).slice(0, 18) : 'Deal ' + (i+1));
+    const profits = selectedDeals.map(deal => parseFloat((deal.data && deal.data.netProfit) ? String(deal.data.netProfit).replace(/[^\d.\-]/g, '') : '0'));
+    const rois = selectedDeals.map(deal => parseFloat((deal.data && deal.data.roi) ? String(deal.data.roi).replace(/[^\d.\-]/g, '') : '0'));
+    // Use Chart.js default tooltip for desktop, and external handler for touch devices
+    window.compareChartJS = new window.Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    type: 'bar',
+                    label: 'Net Profit ($)',
+                    data: profits,
+                    backgroundColor: '#2563eb', // blue
+                    borderColor: '#2563eb',
+                    borderWidth: 2,
+                    yAxisID: 'y',
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.7,
+                },
+                {
+                    type: 'line',
+                    label: 'ROI (%)',
+                    data: rois,
+                    borderColor: '#22c55e', // green
+                    backgroundColor: 'rgba(34,197,94,0.15)', // light green fill
+                    borderWidth: 3,
+                    yAxisID: 'y1',
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#22c55e',
+                    pointBorderColor: '#22c55e',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#222',
+                        font: { size: 11 },
+                        boxWidth: 18,
+                        padding: 6
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: '#fff',
+                    titleColor: '#222',
+                    bodyColor: '#222',
+                    borderColor: '#2563eb',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    beginAtZero: true,
+                    title: { display: false },
+                    ticks: { color: '#222', font: { size: 12 }, callback: function(v) { return v.toLocaleString(); } },
+                    grid: { color: 'rgba(0,0,0,0.08)' },
+                    display: true,
+                    axis: 'y',
+                    border: { display: true, color: '#222' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    grid: { display: false },
+                    title: { display: false },
+                    ticks: { color: '#22c55e', font: { size: 12 } },
+                    display: true,
+                    axis: 'y',
+                    border: { display: true, color: '#22c55e' }
+                },
+                x: {
+                    type: 'category',
+                    title: { display: false },
+                    ticks: {
+                        color: '#222',
+                        font: { size: 12 },
+                        callback: function(v, i, arr) {
+                            let label = this.getLabelForValue(v);
+                            return label.length > 14 ? label.slice(0, 14) + '…' : label;
+                        },
+                        maxRotation: 30,
+                        minRotation: 30
+                    },
+                    grid: { color: 'rgba(0,0,0,0.08)' },
+                    display: true,
+                    axis: 'x',
+                    border: { display: true, color: '#222' }
+                }
+            },
+            layout: {
+                padding: 0
+            },
+            animation: {
+                duration: 600,
+                easing: 'easeOutQuart'
+            },
+            elements: {
+                bar: { borderRadius: 2 },
+                point: { radius: 4, hoverRadius: 6 }
+            }
+        }
+    });
+    // ...existing code...
+}
+function calculate() {
+    // Helper to parse numbers from input fields
+    function val(id) {
+        const el = document.getElementById(id);
+        if (!el) return 0;
+        let v = (el.value || '').replace(/[^\d.\-]/g, '');
+        return parseFloat(v) || 0;
+    }
+    function setVal(id, v, isPercent) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (isPercent) {
+            el.value = isNaN(v) ? '0.00%' : v.toFixed(2) + '%';
+        } else {
+            el.value = isNaN(v) ? '$0.00' : ('$' + v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}));
+        }
+        // If readonly (calculated), make it look like user-entered (persistently)
+        if (el.hasAttribute('readonly')) {
+            if (isNaN(v) || v === null || v === 0) {
+                el.classList.remove('calculated-active');
+            } else {
+                el.classList.add('calculated-active');
+            }
+        }
+    }
+    function setDiv(id, v) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = isNaN(v) ? '$0.00' : ('$' + v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}));
+    }
+
+    // Inputs
+    const arv = val('arv');
+    const purchasePrice = val('purchasePrice');
+    const rehabBudget = val('rehabBudget');
+    const contingency = val('contingency');
+    const closingCosts = val('closingCosts');
+    const holdingCosts = val('holdingCosts');
+    const miscCosts = val('miscCosts');
+    const salesCostsPct = val('salesCosts');
+    const ltv = val('ltv');
+    const points = val('points');
+    const interestRate = val('interestRate');
+    const loanTerm = val('loanTerm');
+    const desiredProfit = val('desiredProfit');
+    const lenderCovers = document.getElementById('lenderCovers')?.checked;
+    const loanStructure = document.getElementById('loanStructure')?.value || 'Interest-Only';
+
+    // Calculations
+    const rehabCont = rehabBudget * (contingency/100);
+    const totalRehab = rehabBudget + rehabCont;
+    const maximumLoan = arv * (ltv/100);
+    const closingCostsForLoan = lenderCovers ? closingCosts : 0;
+    const lenderAvailForRehab = Math.max(0, maximumLoan - purchasePrice - closingCostsForLoan);
+    const rehabNotFunded = Math.max(0, totalRehab - lenderAvailForRehab);
+    const rehabDraw = totalRehab - rehabNotFunded;
+    const initialLoan = Math.min(maximumLoan, purchasePrice + (lenderCovers ? closingCosts : 0) + rehabDraw);
+    const pointsCost = initialLoan * (points/100);
+    const totalProjectCost = purchasePrice + totalRehab + closingCosts + pointsCost + miscCosts;
+    const sellingCostsAmount = arv * (salesCostsPct/100);
+    const mao = maximumLoan - totalRehab - closingCosts - holdingCosts - miscCosts - sellingCostsAmount - desiredProfit;
+    const idealPurchase = arv - totalRehab - holdingCosts - closingCosts - miscCosts - sellingCostsAmount - desiredProfit;
+    const totalLoanAmount = initialLoan;
+
+    // --- Loan payment calculations by structure ---
+    // Interest-Only: pay only interest monthly, principal due at end
+    // Amortizing: pay principal + interest monthly, no balloon
+    // Balloon: pay only interest monthly, principal due at end
+    const monthlyRate = (interestRate/100)/12;
+    let monthlyPayment = 0, totalInterest = 0, balloonPayment = 0;
+    if (loanTerm === 0) {
+        // No loan term, nothing due
+        monthlyPayment = 0;
+        totalInterest = 0;
+        balloonPayment = 0;
+    } else if (loanStructure === 'Interest-Only' || loanStructure === 'Balloon') {
+        // INTEREST-ONLY or BALLOON: Only interest paid monthly, principal due at end
+        // Monthly Payment = Initial Loan * Monthly Rate
+        monthlyPayment = initialLoan * monthlyRate;
+        // Total Interest = Monthly Payment * Loan Term
+        totalInterest = monthlyPayment * loanTerm;
+        // Balloon Payment = Initial Loan (principal due at end)
+        balloonPayment = initialLoan;
+    } else {
+        // AMORTIZING: Principal + interest paid monthly, no balloon
+        // Monthly Payment = P * [r(1+r)^n] / [(1+r)^n - 1]
+        if (monthlyRate > 0) {
+            monthlyPayment = initialLoan * (monthlyRate * Math.pow(1+monthlyRate, loanTerm)) / (Math.pow(1+monthlyRate, loanTerm) - 1);
+            // Total Interest = (Monthly Payment * n) - P
+            totalInterest = (monthlyPayment * loanTerm) - initialLoan;
+        } else {
+            // Zero interest: just principal divided by months
+            monthlyPayment = loanTerm > 0 ? initialLoan/loanTerm : 0;
+            totalInterest = 0;
+        }
+        // No balloon payment for amortizing
+        balloonPayment = 0;
+    }
+
+    // Cash requirements and profit analysis
+    const borrowerCashAtClosing = Math.max(0, purchasePrice + (lenderCovers ? 0 : closingCosts) + pointsCost + miscCosts + rehabNotFunded - initialLoan);
+    const liquidityRequired = Math.max(0, borrowerCashAtClosing + holdingCosts);
+    const netResale = arv - sellingCostsAmount;
+    let principalRepayment;
+    if (loanStructure === 'Interest-Only' || loanStructure === 'Balloon') {
+        principalRepayment = balloonPayment;
+    } else {
+        principalRepayment = initialLoan + balloonPayment;
+    }
+    let totalLoanRepayment;
+    if (loanStructure === 'Interest-Only' || loanStructure === 'Balloon') {
+        totalLoanRepayment = initialLoan + totalInterest;
+    } else {
+        totalLoanRepayment = initialLoan + totalInterest + balloonPayment;
+    }
+    const netFromSale = arv - sellingCostsAmount;
+    const netProceedsAfterLoan = netFromSale - principalRepayment;
+    const outOfPocket = borrowerCashAtClosing + holdingCosts + totalInterest;
+    const netProfit = netProceedsAfterLoan - outOfPocket;
+    let roi = 0;
+    if (outOfPocket > 0 && isFinite(netProfit)) {
+        roi = (netProfit / outOfPocket) * 100;
+    }
+
+    // Purchase price to make desired profit (binary search)
+    let purchaseForDesired = 0;
+    if (desiredProfit > 0 && arv > 0) {
+        let low = 0, high = arv, best = null;
+        function simulateProfit(testPurchase) {
+            const testLenderAvailForRehab = Math.max(0, maximumLoan - testPurchase - closingCostsForLoan);
+            const testRehabNotFunded = Math.max(0, totalRehab - testLenderAvailForRehab);
+            const testRehabDraw = totalRehab - testRehabNotFunded;
+            const testInitialLoan = Math.min(maximumLoan, testPurchase + (lenderCovers ? closingCosts : 0) + testRehabDraw);
+            const testPointsCost = testInitialLoan * (points/100);
+            const testTotalProjectCost = testPurchase + totalRehab + closingCosts + testPointsCost + miscCosts;
+            const testSellingCostsAmount = arv * (salesCostsPct/100);
+            const testBorrowerCashAtClosing = Math.max(0, testPurchase + (lenderCovers ? 0 : closingCosts) + testPointsCost + miscCosts + testRehabNotFunded - testInitialLoan);
+            const testLiquidityRequired = Math.max(0, testBorrowerCashAtClosing + holdingCosts);
+            let testMonthlyPayment = 0, testTotalInterest = 0, testBalloonPayment = 0;
+            if (loanTerm === 0) {
+                testMonthlyPayment = 0;
+                testTotalInterest = 0;
+                testBalloonPayment = 0;
+            } else if (loanStructure === 'Interest-Only' || loanStructure === 'Balloon') {
+                testMonthlyPayment = testInitialLoan * monthlyRate;
+                testTotalInterest = testMonthlyPayment * loanTerm;
+                testBalloonPayment = testInitialLoan;
+            } else {
+                if (monthlyRate > 0) {
+                    testMonthlyPayment = testInitialLoan * (monthlyRate * Math.pow(1+monthlyRate, loanTerm)) / (Math.pow(1+monthlyRate, loanTerm) - 1);
+                    testTotalInterest = (testMonthlyPayment * loanTerm) - testInitialLoan;
+                } else {
+                    testMonthlyPayment = loanTerm > 0 ? testInitialLoan/loanTerm : 0;
+                    testTotalInterest = 0;
+                }
+            }
+            let testPrincipalRepayment;
+            if (loanStructure === 'Interest-Only' || loanStructure === 'Balloon') {
+                testPrincipalRepayment = testBalloonPayment;
+            } else {
+                testPrincipalRepayment = testInitialLoan + testBalloonPayment;
+            }
+            const testNetFromSale = arv - testSellingCostsAmount;
+            const testNetProceedsAfterLoan = testNetFromSale - testPrincipalRepayment;
+            const testOutOfPocket = testBorrowerCashAtClosing + holdingCosts + testTotalInterest;
+            const testNetProfit = testNetProceedsAfterLoan - testOutOfPocket;
+            return testNetProfit;
+        }
+        for(let i=0; i<100; i++){
+            let mid = (low + high) / 2;
+            const p = simulateProfit(mid);
+            if (p >= desiredProfit) {
+                best = mid;
+                low = mid + 0.01;
+            } else {
+                high = mid - 0.01;
+            }
+        }
+        if (best !== null && simulateProfit(best) >= desiredProfit) {
+            let step = 0.01;
+            let candidate = best;
+            while (candidate + step <= arv && simulateProfit(candidate + step) >= desiredProfit) {
+                candidate += step;
+            }
+            purchaseForDesired = candidate;
+        } else {
+            purchaseForDesired = 0;
+        }
+    }
+
+    // Update UI fields
+    setVal('maximumLoan', maximumLoan);
+    setVal('initialLoan', initialLoan);
+    setVal('totalProjectCost', totalProjectCost);
+    setVal('idealPurchase', idealPurchase);
+    setVal('rehabNotFunded', rehabNotFunded);
+    setVal('rehabDraw', rehabDraw);
+    setVal('totalLoanAmount', totalLoanAmount);
+    setVal('mao', mao);
+    setVal('cashToFundRehab', rehabNotFunded);
+    setVal('borrowerCash', borrowerCashAtClosing);
+    setVal('liquidity', liquidityRequired);
+    setVal('monthlyPayment', monthlyPayment);
+    setVal('netResale', sellingCostsAmount);
+    setVal('netFromSale', netFromSale);
+    setVal('totalLoanRepayment', totalLoanRepayment);
+    setVal('netProceeds', netProceedsAfterLoan);
+    setVal('outOfPocket', outOfPocket);
+    setVal('netProfit', netProfit);
+    setVal('roi', roi, true);
+    setDiv('purchaseForDesired', purchaseForDesired);
+}
+window.addEventListener('load', function() {
+    setupMobileFormatting();
+    calculate();
+});
+
+// Ensure loadDeal and deleteDeal are globally defined
+window.loadDeal = function(index) {
+    const deal = savedDeals[index];
+    if (!deal) return;
+
+    // Load all fields in all sections (Deal Info, Quick Offers, Key Metrics, etc.)
+    // Restore all Deal Information and Quick Offers fields by matching input/label/value IDs
+    Object.keys(deal.data).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            if (element.type === 'checkbox') {
+                element.checked = deal.data[key];
+            } else if (element.tagName === 'DIV' || element.tagName === 'SPAN' || element.tagName === 'LABEL') {
+                element.textContent = deal.data[key];
+            } else {
+                element.value = deal.data[key];
+            }
+        }
+    });
+
+    // Also set all readonly/calculated fields if present in deal.data
+    [
+        'maximumLoan','initialLoan','totalProjectCost','idealPurchase','rehabNotFunded','rehabDraw','totalLoanAmount','mao',
+        'cashToFundRehab','borrowerCash','monthlyPayment','liquidity','netResale','netFromSale','totalLoanRepayment',
+        'netProceeds','outOfPocket','netProfit','roi'
+    ].forEach(key => {
+        if (deal.data[key] !== undefined) {
+            const element = document.getElementById(key);
+            if (element) element.value = deal.data[key];
+        }
+    });
+
+    // Restore Quick Offers section (labels, values, and margins input if present in deal.data)
+    if (deal.data.margins !== undefined && document.getElementById('margins')) {
+        document.getElementById('margins').value = deal.data.margins;
+    }
+    if (deal.data.quickOffer1Label && document.getElementById('quickOffer1Label')) {
+        document.getElementById('quickOffer1Label').textContent = deal.data.quickOffer1Label;
+    }
+    if (deal.data.quickOffer2Label && document.getElementById('quickOffer2Label')) {
+        document.getElementById('quickOffer2Label').textContent = deal.data.quickOffer2Label;
+    }
+    if (deal.data.quickOffer3Label && document.getElementById('quickOffer3Label')) {
+        document.getElementById('quickOffer3Label').textContent = deal.data.quickOffer3Label;
+    }
+    // Always set quick offer values, default to $0.00 if missing or empty
+    ['quickOffer1Value','quickOffer2Value','quickOffer3Value'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        const val = deal.data[id];
+        if (el) el.textContent = (val && val.trim()) ? val : '$0.00';
+    });
+    calculate();
+    renderCompareList();
+    setupMobileFormatting();
+};
+window.deleteDeal = function(index) {
+    if (confirm('Delete this deal?')) {
+        savedDeals.splice(index, 1);
+        localStorage.setItem('mobileCalculatorDeals', JSON.stringify(savedDeals));
+        renderSavedDeals();
+        renderCompareList();
+    }
+};
+
+// In saveDeal, after renderSavedDeals, also call renderCompareList
+function saveDeal(overwriteIdx) {
+    const dealObj = buildDealObj();
+    if (typeof overwriteIdx === 'number' && overwriteIdx >= 0) {
+        savedDeals[overwriteIdx] = dealObj;
+    } else {
+        savedDeals.unshift(dealObj);
+    }
+    localStorage.setItem('mobileCalculatorDeals', JSON.stringify(savedDeals));
+    renderSavedDeals();
+    renderCompareList();
+    setupMobileFormatting();
+}
+
+// In resetInputs, set quick offer values to $0.00
+function resetInputs() {
+    // List of all main input fields
+    const inputIds = [
+        'dealName','dealAddress','dealNotes','arv','purchasePrice','rehabBudget','contingency','ltv','closingCosts','holdingCosts','salesCosts','interestRate','miscCosts','points','loanTerm','desiredProfit','margins'
+    ];
+    // Check if any field has data
+    let hasData = inputIds.some(id => {
+        const el = document.getElementById(id);
+        return el && el.value && el.value.trim() !== '';
+    });
+    if (hasData) {
+        showSaveDealModal(
+            'Do you really want to reset? All entered data will be cleared.',
+            [
+                {text:'No', bg:'#dc2626', color:'#fff'},
+                {text:'Yes', bg:'#22c55e', color:'#fff', action:doResetInputs}
+            ]
+        );
+        return;
+    }
+    doResetInputs();
+}
+
+function doResetInputs() {
+    // Reset all input fields to empty
+    document.getElementById('dealName').value = '';
+    document.getElementById('dealAddress').value = '';
+    document.getElementById('dealNotes').value = '';
+    document.getElementById('arv').value = '';
+    document.getElementById('purchasePrice').value = '';
+    document.getElementById('rehabBudget').value = '';
+    document.getElementById('contingency').value = '';
+    document.getElementById('ltv').value = '';
+    document.getElementById('closingCosts').value = '';
+    document.getElementById('holdingCosts').value = '';
+    document.getElementById('salesCosts').value = '';
+    document.getElementById('interestRate').value = '';
+    document.getElementById('miscCosts').value = '';
+    document.getElementById('points').value = '';
+    document.getElementById('loanTerm').value = '';
+    document.getElementById('desiredProfit').value = '';
+    document.getElementById('margins').value = '';
+
+    // Reset quick offer values to $0.00
+    ['quickOffer1Value','quickOffer2Value','quickOffer3Value'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '$0.00';
+    });
+
+    // Uncheck lender covers closing costs
+    const lenderCovers = document.getElementById('lenderCovers');
+    if (lenderCovers) lenderCovers.checked = false;
+
+    // Close any open modals
+    var modal = document.getElementById('saveDealModal');
+    if (modal) modal.style.display = 'none';
+
+    // Recalculate values
+    calculate();
+    renderCompareList();
+    setupMobileFormatting();
+}
+
+// Custom modal for ARV required message
+function showArvRequiredModal() {
+    // Remove any existing modal
+    let old = document.getElementById('arvRequiredModal');
+    if (old) old.remove();
+    // Create modal
+    let modal = document.createElement('div');
+    modal.id = 'arvRequiredModal';
+    modal.style.position = 'fixed';
+    modal.style.left = '0';
+    modal.style.top = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.background = 'rgba(0,0,0,0.5)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = 99999;
+    let box = document.createElement('div');
+    box.style.background = '#fff';
+    box.style.color = '#222';
+    box.style.padding = '24px 20px 16px 20px';
+    box.style.borderRadius = '12px';
+    box.style.maxWidth = '90vw';
+    box.style.textAlign = 'center';
+    box.style.boxShadow = '0 2px 16px #000';
+    box.style.border = '3px solid #007bff';
+    box.innerHTML = `<div style='margin-bottom:18px;font-size:1.1em;'>Please enter a valid ARV (After Repair Value) before applying quick offers.</div><button id='arvRequiredModalBtn' style='background:#007bff;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:1em;cursor:pointer;'>OK</button>`;
+    modal.appendChild(box);
+    document.body.appendChild(modal);
+    document.getElementById('arvRequiredModalBtn').onclick = function() {
+        document.body.removeChild(modal);
+    };
+}
+
+// Confirm and load deal with validation
+function confirmAndLoadDeal(index) {
+    showSaveDealModal(
+        'Do you want to load this saved deal? All current data will be replaced.',
+        [
+            {text:'No', bg:'#dc2626', color:'#fff'},
+            {text:'Yes', bg:'#22c55e', color:'#fff', action:function(){ loadDeal(index); }}
+        ]
+    );
+}
+    </script>
+<script>
+// Register service worker for PWA
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>
